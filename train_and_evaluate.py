@@ -1,8 +1,11 @@
 import pandas as pd
+# pyrefly: ignore [missing-import]
 import numpy as np
+# pyrefly: ignore [missing-import]
 import matplotlib.pyplot as plt
 import seaborn as sns
 import time
+# pyrefly: ignore [missing-import]
 import joblib
 import os
 from sklearn.model_selection import train_test_split
@@ -14,9 +17,7 @@ from sklearn.metrics import accuracy_score, confusion_matrix, classification_rep
 TRAIN_FILES = ['train_1.csv', 'train_2.csv', 'train_3.csv', 'train_4.csv']
 TEST_FILE = 'test.csv'
 
-# ==========================================
-# 1. HÀM RULE-BASED (Tái tạo logic cũ để làm Baseline)
-# ==========================================
+# 1. HÀM RULE-BASED
 def rule_based_predict(features):
     """
     Tái tạo lại logic rule-based (gập ngón tay) từ ai_controller.py
@@ -89,9 +90,7 @@ def main():
     
     results = {}
     
-    # ==========================================
     # 2. HUẤN LUYỆN VÀ ĐÁNH GIÁ (TRAIN & EVALUATE)
-    # ==========================================
     print("\n2. Bắt đầu huấn luyện và đánh giá...")
     for name, model in models.items():
         print(f"  -> Đang xử lý mô hình: {name}")
@@ -121,9 +120,7 @@ def main():
             'Predictions': y_pred
         }
     
-    # ==========================================
     # 3. TRÌNH BÀY KẾT QUẢ & VẼ BIỂU ĐỒ
-    # ==========================================
     print("\n3. Tóm tắt Kết quả Báo cáo:")
     print("="*50)
     for name, res in results.items():
@@ -166,9 +163,7 @@ def main():
     
     print("\n[HOÀN TẤT] Đã lưu 3 mô hình (.pkl) và 2 file hình ảnh biểu đồ (.png).")
     
-    # ==========================================
     # 4. ĐÁNH GIÁ, ƯU NHƯỢC ĐIỂM & KẾT LUẬN
-    # ==========================================
     print("\n==================================================")
     print("4. ĐÁNH GIÁ VÀ KẾT LUẬN CHUYÊN SÂU")
     print("==================================================")
@@ -208,12 +203,10 @@ def main():
 """
     print(report_text)
     
-    # Lưu báo cáo ra file text để sinh viên dễ copy vào word
     with open('evaluation_report.txt', 'w', encoding='utf-8') as f:
         f.write(report_text)
         
     print("=> Toàn bộ nội dung đánh giá đã được lưu vào file 'evaluation_report.txt'.")
-    print("Bạn có thể copy nội dung trong file này, kèm với 2 hình ảnh biểu đồ để dán thẳng vào Báo cáo Đồ án của mình!")
 
 if __name__ == '__main__':
     main()

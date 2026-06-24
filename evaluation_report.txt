@@ -1,7 +1,7 @@
 
 [KẾT QUẢ TỔNG QUAN]
 - Mô hình đạt độ chính xác cao nhất: SVM (99.81%)
-- Mô hình dự đoán nhanh nhất (tối ưu realtime): MLP (Deep Learning) (0.0019 ms/frame)
+- Mô hình dự đoán nhanh nhất (tối ưu realtime): MLP (Deep Learning) (0.0009 ms/frame)
 
 [PHÂN TÍCH ƯU/NHƯỢC ĐIỂM TỪNG PHƯƠNG PHÁP]
 
@@ -17,11 +17,10 @@
    + Ưu điểm: Rất mạnh mẽ trong không gian nhiều chiều (cụ thể ở đây là 63 chiều tọa độ tay x, y, z). Thường cho độ chính xác cực cao và đường ranh giới phân loại rất rõ nét. Tốc độ dự đoán tốt.
    + Nhược điểm: Tốn nhiều thời gian để train nếu dữ liệu lên đến hàng chục nghìn mẫu.
 
-4. MLP (Mạng Nơ-ron Nhân tạo - Cấu trúc D Learning cơ bản):
+4. MLP (Mạng Nơ-ron Nhân tạo - Cấu trúc Deep Learning cơ bản):
    + Ưu điểm: Khả năng học các đặc trưng phức tạp (phi tuyến tính) cực tốt. Kích thước mô hình lưu trữ nhỏ gọn và tốc độ dự đoán lúc chơi game là siêu nhanh (chỉ bằng vài phép nhân ma trận).
    + Nhược điểm: Hoạt động như một "hộp đen" khó giải thích, tốn thời gian cấu hình số lớp/số nơ-ron ban đầu.
 
 [KẾT LUẬN CHUNG DÀNH CHO DỰ ÁN]
 => Dựa trên bộ dữ liệu thực tế, mô hình [SVM] đang thể hiện hiệu năng toàn diện nhất với độ chính xác 99.81%.
 => Khuyến nghị: Trong môi trường Game Hub (cần đạt tốc độ 30-60 FPS), việc áp dụng Machine Learning đã khắc phục triệt để điểm yếu chí mạng của phương pháp Rule-Based truyền thống. Mô hình SVM là sự lựa chọn tối ưu nhất để tích hợp vào file 'ai_controller.py' nhằm mang lại trải nghiệm điều khiển mượt mà và chính xác nhất cho người chơi.
-eep
