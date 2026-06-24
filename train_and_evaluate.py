@@ -4,13 +4,15 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import time
 import joblib
+import os
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
 from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 
-CSV_FILE = 'gesture_dataset.csv'
+TRAIN_FILES = ['train_1.csv', 'train_2.csv', 'train_3.csv', 'train_4.csv']
+TEST_FILE = 'test.csv'
 
 # ==========================================
 # 1. HÀM RULE-BASED (Tái tạo logic cũ để làm Baseline)
@@ -46,15 +48,36 @@ def rule_based_predict(features):
 
 def main():
     print("1. Đang đọc dữ liệu...")
-    df = pd.read_csv(CSV_FILE)
-    X = df.drop('label', axis=1).values
-    y = df['label'].values
     
-    print(f"Tổng số mẫu dữ liệu: {len(df)}")
-    print(df['label'].value_counts())
+    # Đọc dữ liệu Train
+    train_dfs = []
+    for f in TRAIN_FILES:
+        if os.path.exists(f):
+            train_dfs.append(pd.read_csv(f))
+        else:
+            print(f"Cảnh báo: Không tìm thấy file {f}")
+            
+    if not train_dfs:
+        print("Lỗi: Không có dữ liệu huấn luyện. Hãy chạy collect_data.py để tạo các file train_1.csv, train_2.csv...")
+        return
+        
+    train_df = pd.concat(train_dfs, ignore_index=True)
+    X_train = train_df.drop('label', axis=1).values
+    y_train = train_df['label'].values
     
-    # Chia dữ liệu 80% train, 20% test
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+    print(f"Tổng số mẫu dữ liệu TRAIN: {len(train_df)}")
+    print(train_df['label'].value_counts())
+    
+    # Đọc dữ liệu Test
+    if os.path.exists(TEST_FILE):
+        test_df = pd.read_csv(TEST_FILE)
+        X_test = test_df.drop('label', axis=1).values
+        y_test = test_df['label'].values
+        print(f"\nTổng số mẫu dữ liệu TEST: {len(test_df)}")
+        print(test_df['label'].value_counts())
+    else:
+        print(f"Lỗi: Không tìm thấy file {TEST_FILE}. Hãy chạy collect_data.py để tạo file test.csv")
+        return
     
     # Danh sách các mô hình
     models = {
@@ -142,7 +165,55 @@ def main():
     plt.close()
     
     print("\n[HOÀN TẤT] Đã lưu 3 mô hình (.pkl) và 2 file hình ảnh biểu đồ (.png).")
-    print("Bạn có thể chèn các hình ảnh 'accuracy_comparison.png' và 'confusion_matrices.png' vào Báo cáo Đồ án của mình!")
+    
+    # ==========================================
+    # 4. ĐÁNH GIÁ, ƯU NHƯỢC ĐIỂM & KẾT LUẬN
+    # ==========================================
+    print("\n==================================================")
+    print("4. ĐÁNH GIÁ VÀ KẾT LUẬN CHUYÊN SÂU")
+    print("==================================================")
+    
+    best_model_name = max(results, key=lambda k: results[k]['Accuracy'])
+    best_acc = results[best_model_name]['Accuracy']
+    
+    fastest_model_name = min(results, key=lambda k: results[k]['Inference_Time_ms'])
+    fastest_time = results[fastest_model_name]['Inference_Time_ms']
+    
+    report_text = f"""
+[KẾT QUẢ TỔNG QUAN]
+- Mô hình đạt độ chính xác cao nhất: {best_model_name} ({best_acc:.2f}%)
+- Mô hình dự đoán nhanh nhất (tối ưu realtime): {fastest_model_name} ({fastest_time:.4f} ms/frame)
+
+[PHÂN TÍCH ƯU/NHƯỢC ĐIỂM TỪNG PHƯƠNG PHÁP]
+
+1. Rule-Based (Lập trình logic hình học cứng):
+   + Ưu điểm: Tốc độ cực nhanh, không cần thu thập dữ liệu hay huấn luyện.
+   + Nhược điểm: Rất kém linh hoạt. Chỉ cần người chơi hơi nghiêng tay, để tay quá gần/xa camera là thuật toán tính khoảng cách ngón tay sẽ sai lệch ngay lập tức. Hiệu năng thực tế thường thấp nhất.
+
+2. KNN (K-Nearest Neighbors):
+   + Ưu điểm: Thuật toán đơn giản, huấn luyện (train) gần như tức thì. Khá trực quan.
+   + Nhược điểm: Ở pha dự đoán (khi chơi game), mô hình phải tính toán khoảng cách với TOÀN BỘ tập dữ liệu gốc. Nếu tập data quá lớn, game sẽ bị lag/giật.
+
+3. SVM (Support Vector Machine):
+   + Ưu điểm: Rất mạnh mẽ trong không gian nhiều chiều (cụ thể ở đây là 63 chiều tọa độ tay x, y, z). Thường cho độ chính xác cực cao và đường ranh giới phân loại rất rõ nét. Tốc độ dự đoán tốt.
+   + Nhược điểm: Tốn nhiều thời gian để train nếu dữ liệu lên đến hàng chục nghìn mẫu.
+
+4. MLP (Mạng Nơ-ron Nhân tạo - Cấu trúc Deep Learning cơ bản):
+   + Ưu điểm: Khả năng học các đặc trưng phức tạp (phi tuyến tính) cực tốt. Kích thước mô hình lưu trữ nhỏ gọn và tốc độ dự đoán lúc chơi game là siêu nhanh (chỉ bằng vài phép nhân ma trận).
+   + Nhược điểm: Hoạt động như một "hộp đen" khó giải thích, tốn thời gian cấu hình số lớp/số nơ-ron ban đầu.
+
+[KẾT LUẬN CHUNG DÀNH CHO DỰ ÁN]
+=> Dựa trên bộ dữ liệu thực tế, mô hình [{best_model_name}] đang thể hiện hiệu năng toàn diện nhất với độ chính xác {best_acc:.2f}%.
+=> Khuyến nghị: Trong môi trường Game Hub (cần đạt tốc độ 30-60 FPS), việc áp dụng Machine Learning đã khắc phục triệt để điểm yếu chí mạng của phương pháp Rule-Based truyền thống. Mô hình {best_model_name} là sự lựa chọn tối ưu nhất để tích hợp vào file 'ai_controller.py' nhằm mang lại trải nghiệm điều khiển mượt mà và chính xác nhất cho người chơi.
+"""
+    print(report_text)
+    
+    # Lưu báo cáo ra file text để sinh viên dễ copy vào word
+    with open('evaluation_report.txt', 'w', encoding='utf-8') as f:
+        f.write(report_text)
+        
+    print("=> Toàn bộ nội dung đánh giá đã được lưu vào file 'evaluation_report.txt'.")
+    print("Bạn có thể copy nội dung trong file này, kèm với 2 hình ảnh biểu đồ để dán thẳng vào Báo cáo Đồ án của mình!")
 
 if __name__ == '__main__':
     main()

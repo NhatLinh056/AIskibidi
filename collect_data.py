@@ -5,18 +5,19 @@ from mediapipe.tasks.python import vision
 import csv
 import os
 
-CSV_FILE = 'gesture_dataset.csv'
+import argparse
 
-# Khởi tạo file CSV nếu chưa tồn tại
-if not os.path.exists(CSV_FILE):
-    with open(CSV_FILE, mode='w', newline='') as f:
-        writer = csv.writer(f)
-        header = []
-        # 21 điểm (x, y, z)
-        for i in range(21):
-            header.extend([f'x_{i}', f'y_{i}', f'z_{i}'])
-        header.append('label')
-        writer.writerow(header)
+def init_csv(csv_file):
+    # Khởi tạo file CSV nếu chưa tồn tại
+    if not os.path.exists(csv_file):
+        with open(csv_file, mode='w', newline='') as f:
+            writer = csv.writer(f)
+            header = []
+            # 21 điểm (x, y, z)
+            for i in range(21):
+                header.extend([f'x_{i}', f'y_{i}', f'z_{i}'])
+            header.append('label')
+            writer.writerow(header)
 
 def normalize_landmarks(hand_landmarks):
     wrist_x = hand_landmarks[0].x
@@ -29,6 +30,14 @@ def normalize_landmarks(hand_landmarks):
     return normalized
 
 def main():
+    parser = argparse.ArgumentParser(description="Collect hand gesture data.")
+    parser.add_argument("csv_file", nargs='?', default="gesture_dataset.csv", help="Name of the CSV file to save data to (e.g., train_1.csv)")
+    args = parser.parse_args()
+    
+    csv_file = args.csv_file
+    init_csv(csv_file)
+    print(f"Data will be saved to: {csv_file}")
+
     base_options = python.BaseOptions(model_asset_path='hand_landmarker.task')
     options = vision.HandLandmarkerOptions(base_options=base_options, num_hands=1)
     detector = vision.HandLandmarker.create_from_options(options)
@@ -42,10 +51,13 @@ def main():
     print("- Đưa tay lên trước camera.")
     print("- Nhấn giữ 'o' để ghi lại cử chỉ OPEN (Mở tay).")
     print("- Nhấn giữ 'f' để ghi lại cử chỉ FIST (Nắm tay).")
-    print("- Nhấn giữ 'p' để ghi lại cử chỉ POINT (Chỉ ngón trỏ).
-- Nhấn giữ 'v' để ghi lại cử chỉ V_SIGN (Chữ V).")
+    print("- Nhấn giữ 'p' để ghi lại cử chỉ POINT (Chỉ ngón trỏ).")
     print("- Nhấn 'q' để thoát.")
     print("=========================================")
+
+    # Mở file sẵn để ghi liên tục (tránh lag/giật camera)
+    csv_file_handle = open(csv_file, mode='a', newline='')
+    csv_writer = csv.writer(csv_file_handle)
 
     while cap.isOpened():
         success, image = cap.read()
@@ -82,10 +94,8 @@ def main():
             
             if label is not None:
                 features = normalize_landmarks(hand_landmarks)
-                with open(CSV_FILE, mode='a', newline='') as f:
-                    writer = csv.writer(f)
-                    row = features + [label]
-                    writer.writerow(row)
+                row = features + [label]
+                csv_writer.writerow(row)
                 counts[label] += 1
         
         # Hiển thị HUD
@@ -100,6 +110,7 @@ def main():
         
     cap.release()
     cv2.destroyAllWindows()
+    csv_file_handle.close()
     print("Đã đóng camera và lưu file CSV.")
 
 if __name__ == '__main__':
