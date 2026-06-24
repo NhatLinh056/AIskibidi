@@ -175,7 +175,7 @@ def draw_overlay_tank(image):
     cv2.circle(image, (CENTER_X, CENTER_Y), DEADZONE_RADIUS, (0, 255, 255), 2)
     cv2.putText(image, 'FIST(OUT) = ROTATE', (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 100), 2, cv2.LINE_AA)
     cv2.putText(image, 'OPEN = MOVE', (20, 80), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2, cv2.LINE_AA)
-    cv2.putText(image, 'FIST(IN) = SHOOT', (20, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 160, 255), 2, cv2.LINE_AA)
+    cv2.putText(image, 'POINT(1 FINGER) = SHOOT', (20, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 160, 255), 2, cv2.LINE_AA)
 
 
 def main():
