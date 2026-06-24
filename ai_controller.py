@@ -184,8 +184,8 @@ def main():
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, FRAME_HEIGHT)
 
     gesture_history = []
-    print('Loading SVM Model...')
-    svm_model = joblib.load('svm_model.pkl')
+    print('Loading MLP Model...')
+    mlp_model = joblib.load('mlp_model.pkl')
 
     base_options = python.BaseOptions(model_asset_path='hand_landmarker.task')
     options = vision.HandLandmarkerOptions(base_options=base_options, num_hands=1)
@@ -239,7 +239,7 @@ def main():
                 for lm in hand_landmarks:
                     features.extend([lm.x - wrist.x, lm.y - wrist.y, lm.z - wrist.z])
                 
-                prediction = svm_model.predict([features])[0]
+                prediction = mlp_model.predict([features])[0]
                 raw_gesture = prediction
                 
                 dist_to_center = math.hypot(hx - CENTER_X, hy - CENTER_Y)
